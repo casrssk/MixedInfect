@@ -1,0 +1,50 @@
+name: mixed_infect
+channels:
+  - anaconda
+  - conda-forge
+  - bioconda
+  - defaults
+  - AgBiome
+  - R
+dependencies:
+  - biopython
+  - blas
+  - boost
+  - boost
+  - bzip2
+  - ca-certificates=2020.10.14=0
+  - capnproto
+  - certifi=2020.6.20=py37h2987424_2
+  - fastani
+  - fasttree
+  - harvesttools
+  - htslib
+  - mash
+  - mason
+  - ncurses
+  - numpy
+  - openmp
+  - openssl
+  - pandas
+  - parsnp
+  - phipack
+  - pip
+  - pyahocorasick
+  - python
+  - python-dateutil
+  - python_abi
+  - pytz
+  - raxml
+  - readline
+  - samtools
+  - scipy
+  - setuptools
+  - six
+  - sqlite
+  - tk
+  - wheel
+  - xz
+  - zlib
+  - zstd
+
+prefix: /Users/satwantkaur/Desktop/Environment/miniconda3/envs/mixed_infect
