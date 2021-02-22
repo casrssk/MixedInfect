@@ -167,7 +167,7 @@ def init_automaton(final_table: pd.DataFrame):
     for i, (pos, seq) in enumerate(kmers_list.items()):
         A.add_word(seq, (pos, seq, i))
         A.add_word(fp.rev_comp(seq), (pos, seq, i))
-        A.make_automaton()
+    A.make_automaton()
     return A
 
 

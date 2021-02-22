@@ -193,7 +193,7 @@ def openfile(A: ahocorasick.Automaton, path: str, snps_uniq: pd.DataFrame, freq_
             if phred < 30:
                 print("phred_score of {} is lower than the threshold".format(sample_fastq))
             sample_df = dbg.kmer_info(A, sample_fastq)
-            avg_kmer_freq = sample_df["freq"].mean(axis=0)
+            avg_kmer_freq = round(sample_df["freq"].mean(axis=0),2)
             if avg_kmer_freq < 20:
                 print("Averge k-mer coverage of the {} is less than the threshold of 20".format(filename))
             sam = sample_df.loc[(sample_df['freq'] >= 10)]
