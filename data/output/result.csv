@@ -1,1 +1,5 @@
-
+,sample,strain_id,Avg_kmer_freq,Snps,relabundance
+0,sample,J-6276tet1,29.11,1658,1.0
+1,GIJ541,Ia20-97,38.01,3791,0.4
+2,GIJ541,G-SotonG1,38.01,3791,0.5
+3,GIJ541,J-31-98,38.01,3791,0.1
