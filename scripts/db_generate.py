@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=line-too-long, missing-module-docstring, too-many-locals, c-extension-no-member
+# pylint: disable=line-too-long, missing-module-docstring, too-many-locals, c-extension-no-member,E0401
 
 from collections import Counter, defaultdict
 import os
+import logging
 import fnmatch
 import ahocorasick
 import pandas as pd
@@ -13,7 +14,7 @@ from scripts import file_parser as fp
 
 
 
-def p_dist(fastafile="distance.tsv"):
+def p_dist(fastafile="distance.tsv.zip"):
     """
     Cluster analysis and selecting representative strains from
     each cluster to update the k-mer database
@@ -50,9 +51,9 @@ def snp_info(f_in="tab.out", path=os.getcwd()):
     :param path: setting the path to current directory
     :type str
     """
-    for f_in in os.listdir(path):
-        if fnmatch.fnmatch(f_in, '*.out'):
-            snp_output = pd.read_csv(f_in, sep="\t")
+    for file in os.listdir(path):
+        if fnmatch.fnmatch(file, '*.out'):
+            snp_output = pd.read_csv(file, sep="\t")
     snp_subset = snp_output.loc[(snp_output.FILTER == "PASS") & (snp_output.QUAL >= 30)]
     snp_subset = snp_subset.loc[snp_subset['ALT'].str.len() == 1]
     snp_subset = snp_subset.reset_index(drop=True)
@@ -72,11 +73,11 @@ def kmerseq(snp:pd.DataFrame, ref_genome: str):
     """
     Combine all the snps with k-mer sequences; positive kmers with
     alternative snp and negative kmer with reference snp
-    :param snp data: enter the dataframe containing snp information
-    :type str
+    :param snp: enter the dataframe containing snp information
+    :param ref_genome: path of reference genome
     """
     # preparing reference genome for extracting kmers
-    with open(ref_genome) as fp_in:
+    with open(ref_genome,'r',encoding="utf-8") as fp_in:
         for name, seq in fp.read_fasta(fp_in):
             header, sequence = name, seq
     kmers_allpos = {}
@@ -171,10 +172,10 @@ def init_automaton(final_table: pd.DataFrame):
     return A
 
 
-def kmer_info(A: ahocorasick.Automaton, fastq: str) -> pd.DataFrame:
+def kmer_info(Aho: ahocorasick.Automaton, fastq: str) -> pd.DataFrame:
     """
     Finds k-mers in the input fastq files
-    :param Automaton: Ahocorasick automaton with all the k-mers loaded in it
+    :param Aho: Ahocorasick automaton with all the k-mers loaded in it
     :param fastq: filepath for the input fastq file
 
     :return: k-mer frequency at SNP positions found in test fastq
@@ -182,11 +183,11 @@ def kmer_info(A: ahocorasick.Automaton, fastq: str) -> pd.DataFrame:
     kmer_seq_counts = defaultdict(int)
     kmer_df = pd.DataFrame(columns=['POS', 'kmer_seq', 'freq'])
     for _, sequence in fp.parse_fastq(fastq):
-        for idx, (_, kmer_seq, _) in A.iter(sequence):
+        for idx, (_, kmer_seq, _) in Aho.iter(sequence):
             kmer_seq_counts[kmer_seq] += 1
     res = []
     for kmer_seq, freq in kmer_seq_counts.items():
-        kmername, sequence, _ = A.get(kmer_seq)
+        kmername, sequence, _ = Aho.get(kmer_seq)
         res.append((kmername, kmer_seq, freq))
 
     def f_out(val, index): return tuple(i[index] for i in val)

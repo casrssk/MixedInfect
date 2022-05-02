@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=line-too-long, missing-module-docstring
+# pylint: disable=line-too-long, missing-module-docstring,C0209
 
 import logging
 import re
@@ -11,12 +11,10 @@ allowed_bases = {'A', 'a', 'C', 'c', 'G', 'g', 'T',
 nuc = str.maketrans('acgtnxACGTNX', 'tgcanxTGCANX')
 
 
-def rev_comp(seq: str) -> str:
+def rev_comp(seq: str):
     """
     Generates and return reverse complement of the sequnece
     :param seq: a string sequence
-
-    :return: translated sequence
     """
     return seq.translate(nuc)[::-1]
 
@@ -26,18 +24,16 @@ REGEX_GZIPPED = re.compile(r'^.+\.gz$')
 
 def parse_fasta(filepath: str):
     '''""
-    Parse a .fasta/.fasta.gz file returning a generator yielding
+    Parse a .fasta.gz file returning a generator yielding
     tuples of fasta headers to sequences.
     :param filepath: Fasta file path
-
-    :return: generator: yields tuples of (<fasta header>, <fasta sequence>)
     '''""
     if REGEX_GZIPPED.match(filepath):
         logging.debug('Opening "%s" as gzipped file', filepath)
         with os.popen('zcat < {}'.format(filepath)) as fin:
             yield from _parse_fasta(fin, filepath)
     else:
-        with open(filepath, 'r') as fin:
+        with open(filepath, 'r',encoding="utf-8") as fin:
             yield from _parse_fasta(fin, filepath)
 
 
@@ -47,8 +43,6 @@ def _parse_fasta(fin: str, filepath: str):
     of fasta headers to sequences
     :param fin: sequence fasta file
     :param filepath: .fasta file path as a string
-
-    :return: generator: yields tuples of (<fasta header>, <fasta sequence>)
     """
     seqs = []
     header = ''
@@ -113,7 +107,7 @@ def parse_fastq(filepath: str):
         with os.popen('zcat < {}'.format(filepath)) as fin:
             yield from _parse_fastq(fin)
     else:
-        with open(filepath, 'r') as fin:
+        with open(filepath, 'r',encoding="utf-8") as fin:
             yield from _parse_fastq(fin)
 
 

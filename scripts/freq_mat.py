@@ -1,19 +1,17 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=line-too-long, missing-module-docstring, import-error, too-many-locals,c-extension-no-member
-
+#This is a standalone script that generates a snp frequency matrix for all the refernce genomes
 import os
 import sys
 import subprocess
-from collections import defaultdict
+import logging
 from traceback import format_exc
 from argparse import ArgumentParser
 import ahocorasick
 import pandas as pd
 from scripts import simulate_ref_reads as sr
 from scripts import db_generate as dbg
-
-# snps = db_generate.snp_info("tab.out", path=os.getcwd())
-# final_table, unique, snps_uniq, final_serovars = db_generate.kmerdb(snps)
+logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 
 
 def freqmat_gen(A: ahocorasick.Automaton, final_serovars: list, final_table: pd.DataFrame, fastqpath: str):
@@ -23,14 +21,12 @@ def freqmat_gen(A: ahocorasick.Automaton, final_serovars: list, final_table: pd.
     :param final_serovars: list of genomes included in database
     :param final_table: a dataframe with SNP coverage for every genome in the database
     :param fastqpath: path for simulated fastq file all genomes
-
-    :return: a dataframe with k-mer frequency at every SNP position for all genomes in the database
     """
     freq_mat = final_table[["POS", "positive_kmers"]]
-    for i, file in enumerate(final_serovars[3:-2]):
+    for file in (final_serovars[3:-2]):
         fastq = os.path.join(fastqpath, ((file + ".fastq")))
         if os.path.exists(fastq):
-            print(" {} file already present".format(fastq))
+            logging.debug(" {} file already present".format(fastq))
         else:
             filename = file+".fasta"
             sr.ref_read_simulation(filename)
@@ -79,10 +75,10 @@ def main(argv=None):
         while True:
             file_list = os.listdir(cur_dir)
             if file_name in file_list:
-                print("File Exists in: ", cur_dir)
+                logging.debug("File Exists in: ", cur_dir)
                 break
             else:
-                print("preparing freq_matrix.csv")
+                logging.debug("preparing freq_matrix.csv")
                 dir_name = "reffastq"
                 fastqpath = os.path.join(cur_dir, dir_name)
                 if os.path.isdir(fastqpath):

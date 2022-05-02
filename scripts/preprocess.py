@@ -4,36 +4,41 @@ import fnmatch
 import subprocess
 import os
 import sys
+import logging
 from traceback import format_exc
 from argparse import ArgumentParser
 from datetime import datetime
-
+logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 # os.chdir("data/")
 
 
-def pairwise_dist(fastafiles: list) -> None:
+def pairwise_dist(fastafiles: str):
     """
     Calculates pairwise genome distance between candidate strains using mash
     :param fastafiles: path of the directory containing genome fasta files
 
     """
+    if not fastafiles or not isinstance(fastafiles, str):
+        raise ValueError("Fastafiles is not valid or empty!")
     mash_ref = "  ".join(["mash sketch -s 400 -k 16  -o  reference",  fastafiles])
     subprocess.call(mash_ref, shell=True)
     mash_dist = " ".join(["mash dist -t ", "reference.msh ",
                           fastafiles, " >", " distance.tsv"])
     subprocess.call(mash_dist, shell=True)
-    print("SNP distance matrix saved in distance.tsv in the current directory")
+    logging.debug("SNP distance matrix saved in distance.tsv in the current directory")
 
 # Performs core genome multi alignment and generates k-mer database
 
 
-def seq_align(fastafiles: list, ref_genome: str):
+def seq_align(fastafiles: str, ref_genome: str):
     """
     Performs intra-specific  core genome alignment and generates SNP based k-mer database
     :param fastafiles: list of path to all fasta files
     :param ref_genome: path to reference genome
     """
     # ref_genome = "data/genomes/DUW3CX.fasta"
+    if not fastafiles or not isinstance(fastafiles, str):
+        raise ValueError("Fastafiles is not valid or empty!")
     year = datetime.now().year
     multiseq_align = " ".join(["parsnp -r  ", ref_genome, " -d ", fastafiles, " -x  -p 2"])
     subprocess.call(multiseq_align, shell=True)
@@ -41,10 +46,14 @@ def seq_align(fastafiles: list, ref_genome: str):
     out_file = "tab.out"
     cur_dir = os.getcwd()
     file_list = os.listdir(cur_dir)
+    if not file_list:
+        raise ValueError("Directory is empty!")
     for file in file_list:
         if fnmatch.fnmatch(file, 'P_'+str(year)+'_*'):
             filename = file+"/parsnp.ggr"
-            print(filename)
+            logging.debug(filename)
+    if not filename:
+        raise FileNotFoundError("Expected file not found")
     # Convert the .ggr snp file into vcf and then tab file
     ggr2vcf = " ".join(["harvesttools -i", filename, "-V", vcf_out])
     subprocess.call(ggr2vcf, shell=True)
@@ -86,10 +95,10 @@ def main(argv=None):
             elif os.path.isfile(input_f) and (input_f.endswith(".fasta") or input_f.endswith(".fa") or input_f.endswith(".fna")):
                 input_files_processed.append(input_f)
             else:
-                print("{} is not a valid file".format(input_f))
+                logging_debug("{} is not a valid file".format(input_f))
         input_files = input_files_processed
         if len(input_files) < 2:
-            print("Less than 2 input sequences provided...")
+            logging.debug("Less than 2 input sequences provided...")
             sys.exit(1)
 
         name = " ".join(input_files[:])
